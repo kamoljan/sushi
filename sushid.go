@@ -65,30 +65,21 @@ func view(w http.ResponseWriter, r *http.Request) {
 }
 
 func initStore(path string) {
-	sumTotal := 0 // total 65536 directories
-	fmt.Println("Initializing data store")
-	addDir := func(i int) {
+	fmt.Println("Initializing data store...")
+	for i := 0; i < 256; i++ {
 		for x := 0; x < 256; x++ {
-			path := fmt.Sprintf("%s/%02x/%02x", path, i, x)
-			fmt.Println("path = ", path)
-			sumTotal++
-			err := os.MkdirAll(path, 0755)
+			err := os.MkdirAll(fmt.Sprintf("%s/%02x/%02x", path, i, x), 0755)
 			if err != nil {
 				panic(err)
 			}
 		}
 	}
-	for i := 0; i < 256; i++ {
-		fmt.Println("i = ", i)
-		addDir(i)
-	}
-
-	fmt.Println("sumTotal = %s", sumTotal)
+	fmt.Println("...Done") // total 65536 directories
 }
 
 func main() {
 	// initialize initialize store
-	initStore("/Users/kamol/work/go/gocode/src/github.com/kamoljan/sushi")
+	initStore("/Users/kamol/work/go/gocode/src/github.com/kamoljan/sushi/store")
 
 	http.HandleFunc("/", errorHandler(upload))
 	http.HandleFunc("/view", errorHandler(view))
