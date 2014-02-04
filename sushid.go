@@ -5,7 +5,8 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
-	"log"
+	"os"
+	//"log"
 	"net/http"
 )
 
@@ -63,7 +64,32 @@ func view(w http.ResponseWriter, r *http.Request) {
 	http.ServeFile(w, r, "image-"+r.FormValue("id"))
 }
 
+func initStore(path string) {
+	sumTotal := 0 // total 65536 directories
+	fmt.Println("Initializing data store")
+	addDir := func(i int) {
+		for x := 0; x < 256; x++ {
+			path := fmt.Sprintf("%s/%02x/%02x", path, i, x)
+			fmt.Println("path = ", path)
+			sumTotal++
+			err := os.MkdirAll(path, 0755)
+			if err != nil {
+				panic(err)
+			}
+		}
+	}
+	for i := 0; i < 256; i++ {
+		fmt.Println("i = ", i)
+		addDir(i)
+	}
+
+	fmt.Println("sumTotal = %s", sumTotal)
+}
+
 func main() {
+	// initialize initialize store
+	initStore("/Users/kamol/work/go/gocode/src/github.com/kamoljan/sushi")
+
 	http.HandleFunc("/", errorHandler(upload))
 	http.HandleFunc("/view", errorHandler(view))
 	http.ListenAndServe(":8080", nil)
