@@ -1,13 +1,14 @@
 package main
 
 import (
+	"crypto/sha1"
 	"encoding/json"
 	"fmt"
-	"io"
+	// "io"
 	"io/ioutil"
-	"os"
-	//"log"
+	// "log"
 	"net/http"
+	"os"
 )
 
 type Msg struct {
@@ -44,19 +45,25 @@ func Message(status string, message string) []byte {
 	return b
 }
 
-func upload(w http.ResponseWriter, r *http.Request) {
+func put(w http.ResponseWriter, r *http.Request) {
 	if r.Method != "PUT" {
 		panic("Not supported Method")
 	}
-	f, _, err := r.FormFile("image")
+
+	b, err := ioutil.ReadAll(r.Body)
+
+	h := sha1.New()
+	h.Write(b)
+	f := fmt.Sprintf("%x", h.Sum(nil))
+
+	// write whole the body
+	err = ioutil.WriteFile("/Users/kamol/work/go/gocode/src/github.com/kamoljan/sushi/"+f, b, 0644)
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Fprintf(w, "%s", b)
 	check(err)
-	defer f.Close()
-	t, err := ioutil.TempFile("./", "image-")
-	check(err)
-	defer t.Close()
-	_, err = io.Copy(t, f)
-	check(err)
-	http.Redirect(w, r, "/view?id="+t.Name()[6:], 302)
 }
 
 func view(w http.ResponseWriter, r *http.Request) {
@@ -78,10 +85,13 @@ func initStore(path string) {
 }
 
 func main() {
-	// initialize initialize store
+	// initialize data store
 	initStore("/Users/kamol/work/go/gocode/src/github.com/kamoljan/sushi/store")
 
-	http.HandleFunc("/", errorHandler(upload))
+	http.HandleFunc("/", errorHandler(put))
 	http.HandleFunc("/view", errorHandler(view))
 	http.ListenAndServe(":8080", nil)
+
+	// TEST
+	// curl -XPUT http://localhost:8080/ad/saved -H "Content-type: image/jpeg" --data-binary @gopher.png
 }
