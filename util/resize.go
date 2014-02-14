@@ -1,12 +1,10 @@
 package main
 
 import (
-	"github.com/nfnt/resize"
+	"fmt"
 	"image/jpeg"
 	"log"
 	"os"
-
-	"fmt"
 	// Package image/jpeg is not used explicitly in the code below,
 	// but is imported for its initialization side-effect, which allows
 	// image.Decode to understand JPEG formatted images. Uncomment these
@@ -14,6 +12,8 @@ import (
 	_ "image/gif"
 	_ "image/jpeg"
 	_ "image/png"
+
+	"github.com/nfnt/resize"
 )
 
 func main() {
